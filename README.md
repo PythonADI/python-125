@@ -1,4 +1,5 @@
 # Python
 
-## Topics
-[Workshop 1](./docs/workshop_1.md)
+
+## Homeworks
+- [Homework 1](workshop_1/README.md)
