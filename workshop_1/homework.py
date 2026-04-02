@@ -15,6 +15,11 @@
 
 # Write your code below:
 
+name = "George"
+age = 15
+is_student = True
+is_adult = age >= 18
+
 
 # Task 2: Math Operators
 # You have a variable: total_price = 150.0
@@ -64,5 +69,9 @@
 # 6. Remainder/Modulo (x % y)
 # 7. Power (x ** y)
 
-# Write your code below:
+
+print(5 // 2)
+print(7 % 2)
+print(5 ** 2)
+print(25 ** (1 / 2))
 
