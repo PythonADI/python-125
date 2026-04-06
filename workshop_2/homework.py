@@ -20,6 +20,8 @@
 
 # Write your code below:
 
+# sentence = "  the quick brown fox jumps over the lazy dog  "
+# print(sentence.count("o"))
 
 # Task 3: Age Checker
 # Ask the user for their age (convert to int).
@@ -31,6 +33,8 @@
 # - 65 and above: "You are a senior."
 
 # Write your code below:
+
+
 
 
 # Task 4: Login System

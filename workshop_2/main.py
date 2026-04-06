@@ -92,10 +92,10 @@ if age >= 18 and is_student:
 
 # or - at least one condition must be True
 is_weekend = False
-is_holiday = True
+is_holiday = False
 
-if is_weekend or is_holiday:
-    print("No work today!")
+if not (is_weekend or is_holiday):
+    print("work today!")
 
 # not - reverses the condition
 is_raining = False
