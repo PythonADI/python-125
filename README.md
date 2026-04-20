@@ -6,6 +6,7 @@
 - [Homework 2](workshop_2/README.md)
 - [Homework 3](workshop_3/README.md)
 - [Homework 4](workshop_4/README.md)
+- [Homework 5](workshop_5/README.md)
 
 
 ## Books
