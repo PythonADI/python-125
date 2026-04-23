@@ -69,10 +69,19 @@ print(a ^ b)                  # {1, 2, 3, 6, 7, 8}
 emails = [
     "alice@x.com",
     "bob@x.com",
-    "alice@x.com",
+    "Alice@x.com",
     "carol@x.com",
     "bob@x.com",
 ]
+
+# emails = [  # list comprehension
+#     email.lower()
+#     for email in emails
+# ]
+
+for i, email in enumerate(emails):
+    emails[i] = email.lower()
+
 
 unique_emails = set(emails)
 print(unique_emails)
