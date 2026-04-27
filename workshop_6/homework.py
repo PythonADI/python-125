@@ -92,17 +92,51 @@
 #   reverse_list([])           -> []
 
 # 1. UNDERSTAND:
+# მოცმემულია ლისტი (ნებისმიერი მონაცემთა ტიპებით).
+# არ გვაქვს უფლება გამოვიყენოთ reverse და [::-1]
+# რა უნდა გავაკეთოთ?
+# უნდა მივიღოთ ორიგინალის შებრუნებული ახალი ლისტი
 
 
 # 2. PLAN (pseudocode):
+"""
+მაგ. მოც. ლისტი [27, 100, 11, 10] - lst
+უნდა მივიღოთ [27, 100, 11, 10]
 
+თითოეული ელემენტისთვის გავაკეთოთ:
+   i - ინდექსი / 0
+
+   თუ i >= (lst.length - 1) / 2: // 1.5
+      შეჩერდეს ციკლი
+   tmp = lst[i] / -10
+   lst[i] = lst[-1 - i]
+   lst[-1 - i] = tmp
+
+
+
+მაგ. მოც. ლისტი [8, 13, -1, 7]
+უნდა მივიღოთ [7, -1, 13, -10]
+"""
 
 # 3. CODE:
 
+def reverse(lst):
+    lst_copy = lst.copy()
+    for i, num in enumerate(lst_copy):
+        if i >= (len(lst_copy) - 1) / 2:
+            break
+
+        lst_copy[i] = lst_copy[-1 - i]
+        lst_copy[-1 - i] = num
+
+    return lst_copy
 
 # 4. TEST:
-
-
+org = ["a", "hello", "b", "nick"]
+print(reverse([8, 13, -1, 7]))
+print(reverse([8, 13, 5, -1, 7]))
+print(reverse(org))
+print(org)
 
 
 # ==============================
