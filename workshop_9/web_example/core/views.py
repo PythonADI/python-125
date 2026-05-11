@@ -1,6 +1,22 @@
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from core.models import Product
 
-# Create your views here.
+
 def home_view(request):
-    return HttpResponse("<i>Hello There</i>")
+    return render(
+        request,
+        "test.html",
+        {
+            "products": Product.objects.all()
+        }
+    )
+
+
+def product_view(request, pk):
+    return render(
+        request,
+        "product_detail.html",
+        {
+            "pk": pk,
+            "product": get_object_or_404(Product, pk=pk)
+        })
