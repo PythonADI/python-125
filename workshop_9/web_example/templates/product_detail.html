@@ -1,17 +1,814 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ product.name }}</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-<h1>{{ product.name }}</h1>
-<span>{{  product.price }}</span>
-<p>{{ product.description }}</p>
+{% block content %}
+<style>
+    .pd {
+        --swatch: {{ product.color|default:"#c8501e" }};
+        padding: 0;
+    }
 
+    .pd-topbar {
+        border-bottom: 1px solid var(--line);
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.72rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-family: 'DM Sans', sans-serif;
+    }
 
+    .pd-topbar a {
+        color: var(--ink);
+        text-decoration: none;
+        position: relative;
+        padding-left: 1.25rem;
+    }
 
-{{ pk }}
-</body>
-</html>
+    .pd-topbar a::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 0.85rem;
+        height: 1px;
+        background: var(--ink);
+        transform: translateY(-50%);
+        transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .pd-topbar a:hover::before {
+        width: 1.25rem;
+    }
+
+    .pd-topbar .crumb {
+        color: var(--muted);
+    }
+
+    .pd-topbar .crumb em {
+        font-family: 'Fraunces', serif;
+        font-style: italic;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        color: var(--ink);
+        text-transform: none;
+        font-size: 0.95rem;
+        margin-left: 0.5rem;
+    }
+
+    .pd-spread {
+        display: grid;
+        grid-template-columns: 1fr;
+        border-bottom: 1px solid var(--line);
+    }
+
+    @media (min-width: 992px) {
+        .pd-spread {
+            grid-template-columns: 5fr 7fr;
+        }
+    }
+
+    .pd-visual {
+        position: relative;
+        aspect-ratio: 4 / 5;
+        background: var(--swatch);
+        overflow: hidden;
+        border-right: 1px solid var(--line);
+        animation: pd-fade 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @media (max-width: 991.98px) {
+        .pd-visual {
+            border-right: none;
+            border-bottom: 1px solid var(--line);
+            aspect-ratio: 1 / 1;
+        }
+    }
+
+    .pd-visual::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(circle at 30% 25%, rgba(255, 253, 248, 0.28) 0%, transparent 45%),
+            radial-gradient(circle at 75% 70%, rgba(26, 26, 26, 0.22) 0%, transparent 50%);
+        mix-blend-mode: overlay;
+    }
+
+    .pd-visual::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.45 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+        opacity: 0.35;
+        mix-blend-mode: multiply;
+        pointer-events: none;
+    }
+
+    .pd-visual .ring {
+        position: absolute;
+        border: 1px solid rgba(255, 253, 248, 0.55);
+        border-radius: 50%;
+        mix-blend-mode: overlay;
+    }
+
+    .pd-visual .ring--a {
+        width: 78%;
+        aspect-ratio: 1;
+        top: -18%;
+        left: -10%;
+    }
+
+    .pd-visual .ring--b {
+        width: 55%;
+        aspect-ratio: 1;
+        bottom: -8%;
+        right: -12%;
+        border-color: rgba(26, 26, 26, 0.35);
+    }
+
+    .pd-visual .ring--c {
+        width: 28%;
+        aspect-ratio: 1;
+        top: 30%;
+        left: 40%;
+        border-color: rgba(255, 253, 248, 0.7);
+    }
+
+    .pd-visual .numeral {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Fraunces', serif;
+        font-weight: 300;
+        font-style: italic;
+        font-size: clamp(8rem, 22vw, 16rem);
+        line-height: 0.85;
+        color: rgba(255, 253, 248, 0.92);
+        letter-spacing: -0.04em;
+        mix-blend-mode: soft-light;
+        text-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+        user-select: none;
+        animation: pd-rise 1.2s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .pd-visual .stamp {
+        position: absolute;
+        top: 1.5rem;
+        left: 1.5rem;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.65rem;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: rgba(255, 253, 248, 0.85);
+        line-height: 1.6;
+        z-index: 2;
+    }
+
+    .pd-visual .stamp .b {
+        display: block;
+        font-family: 'Fraunces', serif;
+        font-size: 1rem;
+        font-style: italic;
+        letter-spacing: 0;
+        text-transform: none;
+        margin-top: 0.25rem;
+    }
+
+    .pd-visual .corner {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        z-index: 2;
+    }
+
+    .pd-visual .corner::before,
+    .pd-visual .corner::after {
+        content: "";
+        position: absolute;
+        background: rgba(255, 253, 248, 0.7);
+    }
+
+    .pd-visual .corner::before {
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+    }
+
+    .pd-visual .corner::after {
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+    }
+
+    .pd-visual .corner--tr {
+        top: 1.5rem;
+        right: 1.5rem;
+    }
+
+    .pd-visual .corner--bl {
+        bottom: 1.5rem;
+        left: 1.5rem;
+    }
+
+    .pd-visual .swatch-tag {
+        position: absolute;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.65rem;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: rgba(255, 253, 248, 0.9);
+        text-align: right;
+        line-height: 1.6;
+        z-index: 2;
+    }
+
+    .pd-visual .swatch-tag .hex {
+        display: block;
+        font-family: 'Fraunces', serif;
+        font-style: italic;
+        font-size: 1.1rem;
+        letter-spacing: 0.05em;
+        text-transform: none;
+        margin-top: 0.25rem;
+    }
+
+    .pd-visual .barcode {
+        position: absolute;
+        bottom: 1.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 2px;
+        align-items: flex-end;
+        height: 24px;
+        opacity: 0.7;
+        z-index: 2;
+    }
+
+    .pd-visual .barcode span {
+        display: block;
+        width: 2px;
+        background: rgba(255, 253, 248, 0.85);
+        height: 100%;
+    }
+
+    .pd-detail {
+        padding: 3rem 2.5rem 3rem;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        background: var(--surface);
+        position: relative;
+    }
+
+    @media (min-width: 992px) {
+        .pd-detail {
+            padding: 4rem 3.5rem 4rem;
+        }
+    }
+
+    .pd-detail > * {
+        animation: pd-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .pd-detail > *:nth-child(1) { animation-delay: 0.05s; }
+    .pd-detail > *:nth-child(2) { animation-delay: 0.15s; }
+    .pd-detail > *:nth-child(3) { animation-delay: 0.25s; }
+    .pd-detail > *:nth-child(4) { animation-delay: 0.35s; }
+    .pd-detail > *:nth-child(5) { animation-delay: 0.45s; }
+    .pd-detail > *:nth-child(6) { animation-delay: 0.55s; }
+    .pd-detail > *:nth-child(7) { animation-delay: 0.65s; }
+
+    .pd-eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 0.7rem;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 0;
+    }
+
+    .pd-eyebrow .sep {
+        flex: 1;
+        height: 1px;
+        background: rgba(26, 26, 26, 0.18);
+    }
+
+    .pd-eyebrow .accent {
+        color: var(--swatch);
+        font-family: 'Fraunces', serif;
+        font-style: italic;
+        font-size: 0.95rem;
+        letter-spacing: 0.04em;
+        text-transform: none;
+    }
+
+    .pd-title {
+        font-family: 'Fraunces', Georgia, serif;
+        font-weight: 300;
+        font-size: clamp(2.5rem, 6vw, 4.75rem);
+        line-height: 0.95;
+        letter-spacing: -0.025em;
+        margin: 0;
+        color: var(--ink);
+    }
+
+    .pd-title .last {
+        font-style: italic;
+        font-weight: 500;
+        color: var(--swatch);
+    }
+
+    .pd-lede {
+        font-family: 'Fraunces', Georgia, serif;
+        font-style: italic;
+        font-size: 1.35rem;
+        line-height: 1.4;
+        color: var(--muted);
+        margin: 0;
+        max-width: 56ch;
+    }
+
+    .pd-body {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 1rem;
+        line-height: 1.7;
+        color: var(--ink);
+        margin: 0;
+        max-width: 60ch;
+        position: relative;
+    }
+
+    .pd-body::first-letter {
+        font-family: 'Fraunces', serif;
+        font-weight: 500;
+        font-style: italic;
+        font-size: 3.5rem;
+        line-height: 0.85;
+        float: left;
+        padding: 0.35rem 0.6rem 0 0;
+        color: var(--swatch);
+    }
+
+    .pd-specs {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0;
+        border-top: 1px solid rgba(26, 26, 26, 0.18);
+        border-bottom: 1px solid rgba(26, 26, 26, 0.18);
+    }
+
+    @media (min-width: 720px) {
+        .pd-specs {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    .pd-spec {
+        padding: 1.25rem 1.5rem 1.25rem 0;
+        border-right: 1px dotted rgba(26, 26, 26, 0.2);
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .pd-spec:nth-child(2n) {
+        padding-left: 1.5rem;
+    }
+
+    @media (min-width: 720px) {
+        .pd-spec:nth-child(2n) {
+            padding-left: 0;
+        }
+        .pd-spec:nth-child(3n+2) {
+            padding-left: 1.5rem;
+        }
+        .pd-spec:nth-child(3n) {
+            padding-left: 1.5rem;
+            border-right: none;
+        }
+    }
+
+    .pd-spec .k {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.65rem;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .pd-spec .v {
+        font-family: 'Fraunces', serif;
+        font-size: 1.2rem;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        color: var(--ink);
+        line-height: 1.2;
+    }
+
+    .pd-spec .v .unit {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-left: 0.4rem;
+        font-weight: 400;
+    }
+
+    .pd-spec .v.hex {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .pd-spec .v.hex::before {
+        content: "";
+        width: 14px;
+        height: 14px;
+        background: var(--swatch);
+        border: 1px solid rgba(26, 26, 26, 0.3);
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .pd-cta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1.5rem;
+        padding-top: 0.5rem;
+    }
+
+    .pd-price {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .pd-price .label {
+        font-size: 0.65rem;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .pd-price .amount {
+        font-family: 'Fraunces', serif;
+        font-weight: 500;
+        font-size: clamp(2.5rem, 5vw, 3.5rem);
+        letter-spacing: -0.03em;
+        line-height: 1;
+        color: var(--ink);
+    }
+
+    .pd-price .amount .gel {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.75rem;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-left: 0.5rem;
+        vertical-align: middle;
+        font-weight: 400;
+    }
+
+    .pd-buttons {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .pd-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 1.75rem;
+        background: var(--ink);
+        color: var(--surface);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.72rem;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border: 1px solid var(--ink);
+        cursor: pointer;
+        transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                    box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                    background 0.3s ease,
+                    color 0.3s ease;
+    }
+
+    .pd-btn:hover {
+        transform: translate(-3px, -3px);
+        box-shadow: 6px 6px 0 var(--swatch);
+        background: var(--swatch);
+        color: var(--surface);
+        border-color: var(--swatch);
+    }
+
+    .pd-btn svg {
+        transition: transform 0.3s ease;
+    }
+
+    .pd-btn:hover svg {
+        transform: translateX(3px);
+    }
+
+    .pd-btn--ghost {
+        background: transparent;
+        color: var(--ink);
+    }
+
+    .pd-btn--ghost:hover {
+        background: transparent;
+        color: var(--swatch);
+        box-shadow: none;
+        transform: translateX(-3px);
+        border-color: transparent;
+    }
+
+    .pd-stock {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.7rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .pd-stock .pip {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #2e8b3f;
+        animation: pulse 2.4s ease-in-out infinite;
+    }
+
+    .pd-stock.low .pip {
+        background: var(--accent);
+    }
+
+    .pd-notes {
+        padding: 4rem 2.5rem 5rem;
+        border-bottom: 1px solid var(--line);
+    }
+
+    @media (min-width: 992px) {
+        .pd-notes {
+            padding: 5rem 3.5rem 6rem;
+        }
+    }
+
+    .pd-notes-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid rgba(26, 26, 26, 0.18);
+        margin-bottom: 2.5rem;
+    }
+
+    .pd-notes-head .t {
+        font-family: 'Fraunces', serif;
+        font-style: italic;
+        font-weight: 500;
+        font-size: 1.75rem;
+        letter-spacing: -0.01em;
+    }
+
+    .pd-notes-head .c {
+        font-size: 0.7rem;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .pd-notes-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    @media (min-width: 720px) {
+        .pd-notes-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    .pd-note {
+        padding: 1.5rem 0;
+        border-top: 1px solid var(--ink);
+        position: relative;
+    }
+
+    .pd-note .n {
+        font-family: 'Fraunces', serif;
+        font-size: 0.75rem;
+        font-style: italic;
+        color: var(--muted);
+        position: absolute;
+        top: 1.5rem;
+        right: 0;
+    }
+
+    .pd-note .h {
+        font-family: 'Fraunces', serif;
+        font-size: 1.35rem;
+        font-weight: 500;
+        margin: 0 0 0.5rem;
+        letter-spacing: -0.01em;
+    }
+
+    .pd-note .p {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.92rem;
+        line-height: 1.6;
+        color: var(--muted);
+        margin: 0;
+        max-width: 32ch;
+    }
+
+    @keyframes pd-rise {
+        from {
+            opacity: 0;
+            transform: translateY(24px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes pd-fade {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @media (max-width: 575px) {
+        .pd-topbar,
+        .pd-detail,
+        .pd-notes {
+            padding-left: 1.25rem;
+            padding-right: 1.25rem;
+        }
+    }
+</style>
+
+<div class="pd">
+    <div class="pd-topbar">
+        <a href="/">← The Collection</a>
+        <span class="crumb">
+            Filed under
+            <em>{{ product.category.name|default:"Uncatalogued" }}</em>
+        </span>
+    </div>
+
+    <section class="pd-spread">
+        <div class="pd-visual" aria-hidden="true">
+            <span class="ring ring--a"></span>
+            <span class="ring ring--b"></span>
+            <span class="ring ring--c"></span>
+            <span class="corner corner--tr"></span>
+            <span class="corner corner--bl"></span>
+            <div class="stamp">
+                Vol. MMXXVI
+                <span class="b">№ {{ product.pk|stringformat:"03d" }}</span>
+            </div>
+            <div class="numeral">{{ product.pk|stringformat:"02d" }}</div>
+            <div class="swatch-tag">
+                Finish
+                <span class="hex">{{ product.color|default:"—" }}</span>
+            </div>
+            <div class="barcode">
+                <span style="height: 70%"></span><span style="height: 100%"></span>
+                <span style="height: 55%"></span><span style="height: 90%"></span>
+                <span style="height: 40%"></span><span style="height: 100%"></span>
+                <span style="height: 70%"></span><span style="height: 60%"></span>
+                <span style="height: 100%"></span><span style="height: 45%"></span>
+                <span style="height: 85%"></span><span style="height: 100%"></span>
+                <span style="height: 50%"></span><span style="height: 75%"></span>
+                <span style="height: 100%"></span><span style="height: 65%"></span>
+            </div>
+        </div>
+
+        <div class="pd-detail">
+            <div class="pd-eyebrow">
+                <span>Object № {{ product.pk|stringformat:"03d" }}</span>
+                <span class="sep"></span>
+                <span class="accent">In keeping</span>
+                <a href="/product/{{ product.pk }}/edit/" class="btn btn-warning">Edit</a>
+                <a href="/product/{{ product.pk }}/delete/" class="btn btn-danger">Delete</a>
+            </div>
+
+            <h1 class="pd-title" id="pdTitle">{{ product.name }}</h1>
+
+            <p class="pd-lede">
+                A considered thing, kept in small numbers and offered with care.
+            </p>
+
+            <p class="pd-body">{{ product.description }}</p>
+
+            <div class="pd-specs">
+                <div class="pd-spec">
+                    <span class="k">Volume</span>
+                    <span class="v">{{ product.quantity }}<span class="unit">{{ product.get_unit_display }}</span></span>
+                </div>
+                <div class="pd-spec">
+                    <span class="k">Edition</span>
+                    <span class="v">№ {{ product.pk|stringformat:"03d" }}<span class="unit">MMXXVI</span></span>
+                </div>
+                <div class="pd-spec">
+                    <span class="k">Best Before</span>
+                    <span class="v">{% if product.expire_at %}{{ product.expire_at|date:"d · m · Y" }}{% else %}—{% endif %}</span>
+                </div>
+                <div class="pd-spec">
+                    <span class="k">Filed Under</span>
+                    <span class="v">{{ product.category.name|default:"Uncatalogued" }}</span>
+                </div>
+                <div class="pd-spec">
+                    <span class="k">Origin</span>
+                    <span class="v">Tbilisi<span class="unit">GE</span></span>
+                </div>
+                <div class="pd-spec">
+                    <span class="k">Finish</span>
+                    <span class="v hex">{{ product.color|default:"—" }}</span>
+                </div>
+            </div>
+
+            <div class="pd-cta">
+                <div class="pd-price">
+                    <span class="label">Today's price</span>
+                    <span class="amount">{{ product.price }}<span class="gel">GEL</span></span>
+                </div>
+                <div class="pd-buttons">
+                    <span class="pd-stock {% if product.quantity == 0 %}low{% endif %}">
+                        <span class="pip"></span>
+                        {% if product.quantity > 0 %}Available, quietly{% else %}Resting{% endif %}
+                    </span>
+                    <button type="button" class="pd-btn">
+                        Take it home
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                            <path d="M3 11L11 3M11 3H5M11 3V9" stroke="currentColor" stroke-width="1.5"
+                                  stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <a href="/" class="pd-btn pd-btn--ghost">Keep browsing</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pd-notes">
+        <div class="pd-notes-head">
+            <span class="t">Notes from the shelf</span>
+            <span class="c">Three observations</span>
+        </div>
+        <div class="pd-notes-grid">
+            <article class="pd-note">
+                <span class="n">i.</span>
+                <h3 class="h">On origin</h3>
+                <p class="p">Sourced and approved by the shop. We only carry things we'd keep at home ourselves.</p>
+            </article>
+            <article class="pd-note">
+                <span class="n">ii.</span>
+                <h3 class="h">On ritual</h3>
+                <p class="p">Best used slowly. Take the time. The object asks little and gives back patiently.</p>
+            </article>
+            <article class="pd-note">
+                <span class="n">iii.</span>
+                <h3 class="h">On keeping</h3>
+                <p class="p">Store cool, dry, and out of direct sunlight. Honour the date on the label.</p>
+            </article>
+        </div>
+    </section>
+</div>
+
+<script>
+    (function () {
+        const el = document.getElementById('pdTitle');
+        if (!el) return;
+        const text = el.textContent.trim();
+        const parts = text.split(/\s+/);
+        if (parts.length < 2) return;
+        const last = parts.pop();
+        el.textContent = parts.join(' ') + ' ';
+        const accent = document.createElement('span');
+        accent.className = 'last';
+        accent.textContent = last;
+        el.appendChild(accent);
+    })();
+</script>
+{% endblock %}

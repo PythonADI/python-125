@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-outline-danger">Delete</button>
+        <a href="/" class="btn btn-success">Go Back</a>
+    </form>
+{% endblock %}
