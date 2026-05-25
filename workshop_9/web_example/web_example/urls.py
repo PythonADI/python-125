@@ -14,11 +14,13 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from debug_toolbar.toolbar import debug_toolbar_urls
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
+
 from core.views import (
-    home_view,
-    product_view,
     HomeView,
     ProductView,
     ProductCreateView,
@@ -28,9 +30,10 @@ from core.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', HomeView.as_view()),
-    path('product/create/', ProductCreateView.as_view()),
-    path('product/<int:pk>/', ProductView.as_view()),
-    path('product/<int:pk>/edit/', ProductUpdateView.as_view()),
-    path('product/<int:pk>/delete/', ProductDeleteView.as_view())
-]
+    path('', HomeView.as_view(), name="product-list"),
+    path('product/create/', ProductCreateView.as_view(), name="product-create"),
+    path('products/<int:pk>/', ProductView.as_view(), name="product-detail"),
+    path('products/<int:pk>/edit/', ProductUpdateView.as_view(), name="product-edit"),
+    path('products/<int:pk>/delete/', ProductDeleteView.as_view(), name="product-delete")
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + debug_toolbar_urls()
+

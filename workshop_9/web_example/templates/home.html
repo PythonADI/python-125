@@ -21,6 +21,7 @@
 
     <div class="topbar">
         <span><span class="dot"></span>Live Catalogue</span>
+        <a href="{% url 'product-create' %}" class="btn btn-success">Create Product</a>
         <span>Tbilisi · GE</span>
     </div>
 
@@ -45,13 +46,22 @@
                 <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
                     <article class="product-card" style="animation-delay: {{ forloop.counter0 }}00ms;">
                         <div>
+                            {% if product.thumbnail %}
+                                <img class="w-100" src="{{ product.thumbnail.url }}"/>
+                            {% endif %}
+                            <div>
+                                {% for tag in product.tags.all %}
+                                    <span class="badge badge-primary bg-primary rounded">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+
                             <span class="idx">№ {{ product.pk|stringformat:"03d" }}</span>
                             <h2 class="name">{{ product.name }}</h2>
                             <span>{{ product.category.name }}</span>
                         </div>
                         <div class="price-row">
                             <span class="price">{{ product.price }}<span class="gel">GEL</span></span>
-                            <a href="/product/{{ product.pk }}/">
+                            <a href="{{ product.get_absolute_url }}">
                             <span class="arrow">
                                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                                     <path d="M3 11L11 3M11 3H5M11 3V9" stroke="currentColor" stroke-width="1.5"
@@ -70,7 +80,8 @@
                     <span>
                         {% if page_obj.has_previous %}
                             <a class="btn btn-outline-primary" href="?page=1">&laquo; first</a>
-                            <a class="btn btn-outline-primary" href="?page={{ page_obj.previous_page_number }}">previous</a>
+                            <a class="btn btn-outline-primary"
+                               href="?page={{ page_obj.previous_page_number }}">previous</a>
                         {% endif %}
 
                         <span class="btn btn-outline-primary disabled">

@@ -709,8 +709,8 @@
                 <span>Object № {{ product.pk|stringformat:"03d" }}</span>
                 <span class="sep"></span>
                 <span class="accent">In keeping</span>
-                <a href="/product/{{ product.pk }}/edit/" class="btn btn-warning">Edit</a>
-                <a href="/product/{{ product.pk }}/delete/" class="btn btn-danger">Delete</a>
+                <a href="{% url 'product-edit' product.pk %}" class="btn btn-warning">Edit</a>
+                <a href="{% url 'product-delete' product.pk %}" class="btn btn-danger">Delete</a>
             </div>
 
             <h1 class="pd-title" id="pdTitle">{{ product.name }}</h1>

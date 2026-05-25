@@ -1,4 +1,6 @@
-from django.shortcuts import render, get_object_or_404
+from django.contrib import messages
+from django.shortcuts import render, get_object_or_404, reverse
+from django.urls import reverse_lazy
 from core.models import Product, Category
 from django.views.generic import (
     ListView,
@@ -11,8 +13,11 @@ from django.views.generic import (
 
 class HomeView(ListView):
     model = Product
-    paginate_by = 4
-    template_name = "test.html"
+    paginate_by = 100
+    template_name = "home.html"
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("category")
 
 
 class ProductView(DetailView):
@@ -25,7 +30,10 @@ class ProductCreateView(CreateView):
     model = Product
     fields = "__all__"
     template_name = "product_create.html"
-    # success_url = "/"
+
+    def get_success_url(self):
+        messages.add_message(self.request, messages.SUCCESS, f"{self.object.name} was successfully created!")
+        return reverse("product-detail", kwargs={"pk": self.object.pk})
 
 
 class ProductUpdateView(UpdateView):
@@ -36,26 +44,6 @@ class ProductUpdateView(UpdateView):
 
 class ProductDeleteView(DeleteView):
     model = Product
-    success_url = "/"
     template_name = "product_confirm_delete.html"
+    success_url = reverse_lazy("product-list")
 
-
-def home_view(request):
-    return render(
-        request,
-        "test.html",
-        {
-            "categories": Category.objects.all(),
-            "products": Product.objects.all()
-        }
-    )
-
-
-def product_view(request, pk):
-    return render(
-        request,
-        "product_detail.html",
-        {
-            "pk": pk,
-            "product": get_object_or_404(Product, pk=pk)
-        })

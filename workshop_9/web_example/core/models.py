@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse, reverse_lazy
 
 
 class Category(models.Model):
@@ -9,13 +10,22 @@ class Category(models.Model):
         return self.name
 
 
+class Tag(models.Model):
+    title = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.title
+
+
+
 class Product(models.Model):
     class Unit(models.TextChoices):
         ML = "milliliter",
         L = "Liter"
 
-
+    thumbnail = models.ImageField(upload_to="products/", null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
+    tags = models.ManyToManyField(Tag, blank=True)
     barcode = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
     description = models.TextField()
@@ -30,6 +40,10 @@ class Product(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return f"/product/{self.pk}/"
+        return reverse("product-detail", kwargs={"pk": self.pk})
 
+
+class ProductImage(models.Model):
+    image = models.ImageField(upload_to="products/")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
 
