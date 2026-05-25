@@ -1,6 +1,14 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse, reverse_lazy
 
+
+def validate_product_name(value: str):
+    print(value)
+    if not value.isalpha():
+        raise ValidationError(
+            "only alphabet characters are allowed"
+        )
 
 class Category(models.Model):
     name = models.CharField(max_length=40)
@@ -17,7 +25,6 @@ class Tag(models.Model):
         return self.title
 
 
-
 class Product(models.Model):
     class Unit(models.TextChoices):
         ML = "milliliter",
@@ -27,7 +34,7 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     tags = models.ManyToManyField(Tag, blank=True)
     barcode = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, validators=[validate_product_name])
     description = models.TextField()
     price = models.DecimalField(max_digits=12, decimal_places=2)
     quantity = models.IntegerField()
@@ -41,6 +48,13 @@ class Product(models.Model):
 
     def get_absolute_url(self):
         return reverse("product-detail", kwargs={"pk": self.pk})
+
+    def get_total_inventory_value(self):
+        return self.quantity * self.price
+
+    def sell(self, quantity = 1):
+        self.quantity -= quantity
+        self.save()
 
 
 class ProductImage(models.Model):

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin
 from core.models import Product, Category, ProductImage, Tag
 
 # Register your models here.
@@ -10,8 +11,10 @@ class ProductImageInline(admin.StackedInline):
     extra = 1
 
 @admin.register(Product)
-class ProductAdminModel(admin.ModelAdmin):
+class ProductAdminModel(ModelAdmin):
     model = Product
 
     inlines = [ProductImageInline]
-    filter_horizontal = ["tags"]
+    filter_vertical = ["tags"]
+    search_fields = ["name", "tags__title", "category__name"]
+    list_filter = ["category__name", "tags"]
