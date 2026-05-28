@@ -17,7 +17,7 @@ class HomeView(ListView):
     template_name = "home.html"
 
     def get_queryset(self):
-        return super().get_queryset().select_related("category")
+        return super().get_queryset().select_related("category").filter(deleted_at__isnull=True)
 
 
 class ProductView(DetailView):

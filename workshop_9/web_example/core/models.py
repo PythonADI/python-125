@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse, reverse_lazy
@@ -42,6 +44,7 @@ class Product(models.Model):
     expire_at = models.DateField(null=True, blank=True)
     color = models.CharField(max_length=7)
 
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -54,6 +57,10 @@ class Product(models.Model):
 
     def sell(self, quantity = 1):
         self.quantity -= quantity
+        self.save()
+
+    def delete(self, using = None, keep_parents = False):
+        self.deleted_at = timezone.now()
         self.save()
 
 
